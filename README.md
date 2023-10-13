@@ -96,4 +96,3 @@ Provide installation instructions for your CLI tool.
 Document the API endpoints, request/response formats, and any authentication requirements.
 Provide a user guide for the Vue.js application.
 Document the installation and usage of the CLI tool.
-# wasm-repo

@@ -1,0 +1,30 @@
+# Ignore Mac system files
+.DS_Store
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.iml
+
+# Golang
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+/bin/
+*.log
+/build/
+
+# Vue.js (Node related)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+.DS_Store
+*.local
