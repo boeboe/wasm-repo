@@ -32,3 +32,4 @@ require (
 )
 
 replace github.com/boeboe/wasm-repo => ./
+
