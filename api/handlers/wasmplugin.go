@@ -7,7 +7,6 @@ import (
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/boeboe/wasm-repo/api/models/entities"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
 type WASMPluginHandler struct {
@@ -41,8 +40,8 @@ func (h *WASMPluginHandler) CreatePluginHandler(w http.ResponseWriter, r *http.R
 
 // GetPluginByIDHandler handles the request to get a specific WASMPlugin by its ID
 func (h *WASMPluginHandler) GetPluginByIDHandler(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	plugin, err := h.Repo.GetPluginByID(id)
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	plugin, err := h.Repo.GetPluginByID(pluginID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -57,14 +56,8 @@ func (h *WASMPluginHandler) UpdatePluginHandler(w http.ResponseWriter, r *http.R
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	id, err := uuid.Parse(mux.Vars(r)["id"])
-	if err != nil {
-		http.Error(w, "Invalid UUID format", http.StatusBadRequest)
-		return
-	}
-
-	plugin.ID = id
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	plugin.ID = pluginID
 	if err := h.Repo.UpdatePlugin(&plugin); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -75,8 +68,8 @@ func (h *WASMPluginHandler) UpdatePluginHandler(w http.ResponseWriter, r *http.R
 
 // DeletePluginHandler handles the request to delete a specific WASMPlugin
 func (h *WASMPluginHandler) DeletePluginHandler(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	if err := h.Repo.DeletePlugin(id); err != nil {
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	if err := h.Repo.DeletePlugin(pluginID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

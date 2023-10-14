@@ -16,14 +16,14 @@ type WASMRelease struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	Location    WASMLocation `gorm:"foreignKey:ReleaseID"`
-	PluginID    string       `gorm:"type:varchar(255);not null"`
+	PluginID    uuid.UUID    `gorm:"type:uuid;not null"`
 }
 
 type WASMLocation struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Type      string    `gorm:"type:varchar(255);not null"`
 	Location  string    `gorm:"type:text;not null"`
-	ReleaseID string    `gorm:"type:varchar(255);not null"`
+	ReleaseID uuid.UUID `gorm:"type:uuid;not null"`
 }
 
 // BeforeCreate is a GORM hook that gets triggered before a new record is inserted into the database.

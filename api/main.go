@@ -18,6 +18,7 @@ func main() {
 	// Global middleware
 	r.Use(middleware.LoggingMiddleware)
 	r.Use(middleware.ErrorHandlingMiddleware)
+	r.Use(middleware.UUIDMiddleware)
 
 	// Initialize handler structs with the repository
 	pluginHandler := &handlers.WASMPluginHandler{Repo: repo}
@@ -31,9 +32,9 @@ func main() {
 	// WASMPlugin routes
 	r.HandleFunc("/plugins", pluginHandler.ListAllPluginsHandler).Methods("GET")
 	r.HandleFunc("/plugins", pluginHandler.CreatePluginHandler).Methods("POST")
-	r.HandleFunc("/plugins/{id}", pluginHandler.GetPluginByIDHandler).Methods("GET")
-	r.HandleFunc("/plugins/{id}", pluginHandler.UpdatePluginHandler).Methods("PUT")
-	r.HandleFunc("/plugins/{id}", pluginHandler.DeletePluginHandler).Methods("DELETE")
+	r.HandleFunc("/plugins/{pluginID}", pluginHandler.GetPluginByIDHandler).Methods("GET")
+	r.HandleFunc("/plugins/{pluginID}", pluginHandler.UpdatePluginHandler).Methods("PUT")
+	r.HandleFunc("/plugins/{pluginID}", pluginHandler.DeletePluginHandler).Methods("DELETE")
 
 	// WASMRelease routes
 	r.HandleFunc("/plugins/{pluginID}/releases", releaseHandler.ListAllReleasesForPluginHandler).Methods("GET")

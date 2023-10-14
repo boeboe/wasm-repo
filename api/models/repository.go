@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/boeboe/wasm-repo/api/models/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func (r *WASMRepository) CreatePlugin(plugin *entities.WASMPlugin) error {
 }
 
 // GetPluginByID retrieves a specific WASMPlugin by its ID from the PostgreSQL database.
-func (r *WASMRepository) GetPluginByID(id string) (*entities.WASMPlugin, error) {
+func (r *WASMRepository) GetPluginByID(id uuid.UUID) (*entities.WASMPlugin, error) {
 	var plugin entities.WASMPlugin
 	if err := r.Database.First(&plugin, "id = ?", id).Error; err != nil {
 		return nil, handleDBError(err)
@@ -41,12 +42,12 @@ func (r *WASMRepository) UpdatePlugin(plugin *entities.WASMPlugin) error {
 }
 
 // DeletePlugin deletes a specific WASMPlugin by its ID from the PostgreSQL database.
-func (r *WASMRepository) DeletePlugin(id string) error {
+func (r *WASMRepository) DeletePlugin(id uuid.UUID) error {
 	return r.Database.Delete(&entities.WASMPlugin{}, "id = ?", id).Error
 }
 
 // ListAllReleasesForPlugin lists all WASMRelease entries for a given WASMPlugin from the PostgreSQL database.
-func (r *WASMRepository) ListAllReleasesForPlugin(pluginID string) ([]entities.WASMRelease, error) {
+func (r *WASMRepository) ListAllReleasesForPlugin(pluginID uuid.UUID) ([]entities.WASMRelease, error) {
 	var releases []entities.WASMRelease
 	if err := r.Database.Where("plugin_id = ?", pluginID).Find(&releases).Error; err != nil {
 		return nil, err
@@ -55,13 +56,13 @@ func (r *WASMRepository) ListAllReleasesForPlugin(pluginID string) ([]entities.W
 }
 
 // CreateReleaseForPlugin creates a new WASMRelease for a specific WASMPlugin in the PostgreSQL database.
-func (r *WASMRepository) CreateReleaseForPlugin(pluginID string, release *entities.WASMRelease) error {
+func (r *WASMRepository) CreateReleaseForPlugin(pluginID uuid.UUID, release *entities.WASMRelease) error {
 	release.PluginID = pluginID
 	return r.Database.Create(release).Error
 }
 
 // GetReleaseByID retrieves a specific WASMRelease by its ID for a given WASMPlugin from the PostgreSQL database.
-func (r *WASMRepository) GetReleaseByID(pluginID string, releaseID string) (*entities.WASMRelease, error) {
+func (r *WASMRepository) GetReleaseByID(pluginID uuid.UUID, releaseID uuid.UUID) (*entities.WASMRelease, error) {
 	var release entities.WASMRelease
 	if err := r.Database.Where("plugin_id = ? AND id = ?", pluginID, releaseID).First(&release).Error; err != nil {
 		return nil, handleDBError(err)
@@ -70,13 +71,13 @@ func (r *WASMRepository) GetReleaseByID(pluginID string, releaseID string) (*ent
 }
 
 // UpdateReleaseForPlugin updates a specific WASMRelease for a given WASMPlugin in the PostgreSQL database.
-func (r *WASMRepository) UpdateReleaseForPlugin(pluginID string, release *entities.WASMRelease) error {
+func (r *WASMRepository) UpdateReleaseForPlugin(pluginID uuid.UUID, release *entities.WASMRelease) error {
 	release.PluginID = pluginID
 	return r.Database.Save(release).Error
 }
 
 // DeleteReleaseForPlugin deletes a specific WASMRelease by its ID for a given WASMPlugin from the PostgreSQL database.
-func (r *WASMRepository) DeleteReleaseForPlugin(pluginID string, releaseID string) error {
+func (r *WASMRepository) DeleteReleaseForPlugin(pluginID uuid.UUID, releaseID uuid.UUID) error {
 	return r.Database.Delete(&entities.WASMRelease{}, "plugin_id = ? AND id = ?", pluginID, releaseID).Error
 }
 

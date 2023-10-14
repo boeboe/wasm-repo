@@ -6,7 +6,7 @@ import (
 
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/boeboe/wasm-repo/api/models/entities"
-	"github.com/gorilla/mux"
+	"github.com/google/uuid"
 )
 
 type WASMReleaseHandler struct {
@@ -15,7 +15,7 @@ type WASMReleaseHandler struct {
 
 // ListAllReleasesForPluginHandler handles the request to list all WASMReleases for a specific WASMPlugin
 func (h *WASMReleaseHandler) ListAllReleasesForPluginHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID := mux.Vars(r)["pluginID"]
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	releases, err := h.Repo.ListAllReleasesForPlugin(pluginID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -26,7 +26,7 @@ func (h *WASMReleaseHandler) ListAllReleasesForPluginHandler(w http.ResponseWrit
 
 // CreateReleaseForPluginHandler handles the request to create a new WASMRelease for a specific WASMPlugin
 func (h *WASMReleaseHandler) CreateReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID := mux.Vars(r)["pluginID"]
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	var release entities.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -42,8 +42,8 @@ func (h *WASMReleaseHandler) CreateReleaseForPluginHandler(w http.ResponseWriter
 
 // GetReleaseByIDHandler handles the request to get a specific WASMRelease by its ID for a specific WASMPlugin
 func (h *WASMReleaseHandler) GetReleaseByIDHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID := mux.Vars(r)["pluginID"]
-	releaseID := mux.Vars(r)["releaseID"]
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	release, err := h.Repo.GetReleaseByID(pluginID, releaseID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -54,7 +54,7 @@ func (h *WASMReleaseHandler) GetReleaseByIDHandler(w http.ResponseWriter, r *htt
 
 // UpdateReleaseForPluginHandler handles the request to update a specific WASMRelease for a specific WASMPlugin
 func (h *WASMReleaseHandler) UpdateReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID := mux.Vars(r)["pluginID"]
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	var release entities.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -70,8 +70,8 @@ func (h *WASMReleaseHandler) UpdateReleaseForPluginHandler(w http.ResponseWriter
 
 // DeleteReleaseForPluginHandler handles the request to delete a specific WASMRelease for a specific WASMPlugin
 func (h *WASMReleaseHandler) DeleteReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID := mux.Vars(r)["pluginID"]
-	releaseID := mux.Vars(r)["releaseID"]
+	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	if err := h.Repo.DeleteReleaseForPlugin(pluginID, releaseID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
