@@ -4,49 +4,48 @@ import (
 	"log"
 	"os"
 
-	"github.com/boeboe/wasm-repo/api/models/boltrepo"
-	"github.com/boeboe/wasm-repo/api/models/memoryrepo"
-	"github.com/boeboe/wasm-repo/api/models/mongorepo"
-	"github.com/boeboe/wasm-repo/api/models/postgresrepo"
-
-	"github.com/hashicorp/go-memdb"
-	"go.etcd.io/bbolt"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/boeboe/wasm-repo/api/models/entities"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var (
-	// PostgresDb is a global variable for the PostgreSQL database connection
-	PostgresDb *gorm.DB
-	// MongoDb is a global variable for the MongoDB database connection
-	MongoDb *mongo.Database
-	// MemoryDb is a global variable for the in-memory database connection
-	MemoryDb *memdb.MemDB
-	// BoltDb is a global variable for the bbolt file database connection
-	BoltDb *bbolt.DB
+	// Db is a global variable for the database connection
+	Db *gorm.DB
 
 	// The wasm repository exposed to handlers
-	Repo WASMRepository
+	Repo *WASMRepository
 )
 
 // ConnectDatabase initializes the database connection based on the DB_TYPE environment variable.
 func ConnectDatabase() {
 	dbType := os.Getenv("DB_TYPE")
 
+	var err error
+
 	switch dbType {
 	case "postgres":
-		postgresrepo.Connect()
-		Repo = &postgresrepo.PostgresRepository{Database: PostgresDb}
-	case "mongo":
-		mongorepo.Connect()
-		Repo = &mongorepo.MongoRepository{Database: MongoDb}
-	case "memdb":
-		memoryrepo.Connect()
-		Repo = &memoryrepo.MemoryRepository{Database: MemoryDb}
-	case "bbolt":
-		boltrepo.Connect()
-		Repo = &boltrepo.BoltRepository{Database: BoltDb}
+		Db, err = gorm.Open(postgres.Open(os.Getenv("POSTGRES_DSN")), &gorm.Config{})
+	case "mysql":
+		Db, err = gorm.Open(mysql.Open(os.Getenv("MYSQL_DSN")), &gorm.Config{})
+	case "sqlite":
+		Db, err = gorm.Open(sqlite.Open(os.Getenv("SQLITE_DSN")), &gorm.Config{})
 	default:
-		log.Fatalf("Unknown DB_TYPE provided. Supported types are: mongo, postgres.")
+		log.Fatalf("Unknown DB_TYPE provided. Supported types are: postgres, mysql, sqlite.")
 	}
+
+	if err != nil {
+		log.Fatalf("Failed to connect to the %s database: %v", dbType, err)
+	}
+
+	// AutoMigrate models
+	if err := Db.AutoMigrate(&entities.WASMPlugin{}, &entities.WASMRelease{}, &entities.WASMLocation{}); err != nil {
+		log.Fatalf("Failed to auto-migrate tables: %v", err)
+	}
+
+	Repo = &WASMRepository{Database: Db}
+
+	log.Printf("Successfully connected to %s database.", dbType)
 }
