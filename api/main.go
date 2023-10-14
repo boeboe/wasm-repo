@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	models.ConnectDatabase()
+	repo := models.ConnectDatabase()
 
 	r := mux.NewRouter()
 
@@ -19,24 +19,28 @@ func main() {
 	r.Use(middleware.LoggingMiddleware)
 	r.Use(middleware.ErrorHandlingMiddleware)
 
+	// Initialize handler structs with the repository
+	pluginHandler := &handlers.WASMPluginHandler{Repo: repo}
+	releaseHandler := &handlers.WASMReleaseHandler{Repo: repo}
+
 	// Default base route
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to this wasm-repo"))
 	}).Methods("GET")
 
 	// WASMPlugin routes
-	r.HandleFunc("/plugins", handlers.ListAllPluginsHandler).Methods("GET")
-	r.HandleFunc("/plugins", handlers.CreatePluginHandler).Methods("POST")
-	r.HandleFunc("/plugins/{id}", handlers.GetPluginByIDHandler).Methods("GET")
-	r.HandleFunc("/plugins/{id}", handlers.UpdatePluginHandler).Methods("PUT")
-	r.HandleFunc("/plugins/{id}", handlers.DeletePluginHandler).Methods("DELETE")
+	r.HandleFunc("/plugins", pluginHandler.ListAllPluginsHandler).Methods("GET")
+	r.HandleFunc("/plugins", pluginHandler.CreatePluginHandler).Methods("POST")
+	r.HandleFunc("/plugins/{id}", pluginHandler.GetPluginByIDHandler).Methods("GET")
+	r.HandleFunc("/plugins/{id}", pluginHandler.UpdatePluginHandler).Methods("PUT")
+	r.HandleFunc("/plugins/{id}", pluginHandler.DeletePluginHandler).Methods("DELETE")
 
 	// WASMRelease routes
-	r.HandleFunc("/plugins/{pluginID}/releases", handlers.ListAllReleasesForPluginHandler).Methods("GET")
-	r.HandleFunc("/plugins/{pluginID}/releases", handlers.CreateReleaseForPluginHandler).Methods("POST")
-	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", handlers.GetReleaseByIDHandler).Methods("GET")
-	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", handlers.UpdateReleaseForPluginHandler).Methods("PUT")
-	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", handlers.DeleteReleaseForPluginHandler).Methods("DELETE")
+	r.HandleFunc("/plugins/{pluginID}/releases", releaseHandler.ListAllReleasesForPluginHandler).Methods("GET")
+	r.HandleFunc("/plugins/{pluginID}/releases", releaseHandler.CreateReleaseForPluginHandler).Methods("POST")
+	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.GetReleaseByIDHandler).Methods("GET")
+	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.UpdateReleaseForPluginHandler).Methods("PUT")
+	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.DeleteReleaseForPluginHandler).Methods("DELETE")
 
 	// Start the server
 	log.Println("Server started on :8080")

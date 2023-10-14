@@ -5,32 +5,33 @@ PLUGIN_ENDPOINT="$BASE_URL/plugins"
 
 # Test: Create a new plugin
 echo "Creating a new plugin..."
-curl -X POST $PLUGIN_ENDPOINT \
+response=$(curl -s -X POST $PLUGIN_ENDPOINT \
      -H "Content-Type: application/json" \
      -d '{
          "Name": "TestPlugin",
          "Owner": "TestOwner",
          "Description": "This is a test plugin",
          "Type": "TestType"
-     }'
+     }')
+echo $response
 echo
+
+# Extract the ID from the response
+plugin_id=$(echo $response | jq -r '.ID')
 
 # Test: List all plugins
 echo "Listing all plugins..."
 curl -X GET $PLUGIN_ENDPOINT
 echo
 
-# Assuming the ID of the created plugin is 'test-id', you can retrieve, update, and delete using that ID.
-# You might want to extract the ID dynamically from the creation response for a more robust test.
-
 # Test: Retrieve a plugin by ID
 echo "Retrieving a plugin by ID..."
-curl -X GET "$PLUGIN_ENDPOINT/test-id"
+curl -X GET "$PLUGIN_ENDPOINT/$plugin_id"
 echo
 
 # Test: Update a plugin
 echo "Updating a plugin..."
-curl -X PUT "$PLUGIN_ENDPOINT/test-id" \
+curl -X PUT "$PLUGIN_ENDPOINT/$plugin_id" \
      -H "Content-Type: application/json" \
      -d '{
          "Name": "UpdatedPlugin",
@@ -40,5 +41,5 @@ echo
 
 # Test: Delete a plugin
 echo "Deleting a plugin..."
-curl -X DELETE "$PLUGIN_ENDPOINT/test-id"
+curl -X DELETE "$PLUGIN_ENDPOINT/$plugin_id"
 echo

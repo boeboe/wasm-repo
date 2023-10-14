@@ -10,35 +10,33 @@ import (
 
 var (
 	// Db is a global variable for the database connection
-	Db *gorm.DB
-
-	// The wasm repository exposed to handlers
-	Repo *WASMRepository
+	db *gorm.DB
 )
 
 // ConnectDatabase initializes the database connection based on the DB_TYPE environment variable.
-func ConnectDatabase() {
+func ConnectDatabase() *WASMRepository {
 	dbType := os.Getenv("DB_TYPE")
 
 	switch dbType {
 	case "postgres":
 		connectors.ConnectPostgres() // Assuming you named the function ConnectPostgres
-		Db = connectors.PostgresDb
+		db = connectors.PostgresDb
 	case "mysql":
 		connectors.ConnectMySQL() // Assuming you named the function ConnectMySQL
-		Db = connectors.MySqlDb
+		db = connectors.MySqlDb
 	case "sqlite":
 		connectors.ConnectSQLite() // Assuming you named the function ConnectSQLite
-		Db = connectors.SqliteDb
+		db = connectors.SqliteDb
 	default:
 		log.Fatalf("Unknown DB_TYPE provided. Supported types are: postgres, mysql, sqlite.")
 	}
 
-	if Db == nil {
+	if db == nil {
 		log.Fatalf("Failed to connect to the %s database", dbType)
 	}
 
-	Repo = &WASMRepository{Database: Db}
+	repo := &WASMRepository{Database: db}
 
 	log.Printf("Successfully connected to %s database.", dbType)
+	return repo
 }
