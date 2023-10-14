@@ -26,6 +26,10 @@ MYSQL_PASSWORD  := gorm
 MYSQL_DB        := gorm
 MYSQL_PORT      := 3306
 
+ADMINER_CONTAINER := adminer
+ADMINER_PORT      := 8081
+MY_IP 						:= $(shell ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
+
 .PHONY: build
 build: ## Build the server
 	@echo "Building the server..."
@@ -78,3 +82,33 @@ stop-mysql: ## Stop MySQL
 	@docker rm ${MYSQL_CONTAINER}
 	@echo "MySQL container stopped and removed."
 
+.PHONY: start-adminer
+start-adminer: ## Start Adminer for PostgreSQL and MySQL
+ifeq ($(DB_TYPE),postgres)
+	@echo "Starting Adminer for PostgreSQL..."
+	@docker run --name adminer -d \
+		-p $(ADMINER_PORT):8080 \
+		-e ADMINER_DEFAULT_DB_DRIVER=pgsql \
+		-e ADMINER_DEFAULT_DB_HOST=${MY_IP}:${POSTGRES_PORT} \
+		-e ADMINER_DEFAULT_DB_NAME=$(POSTGRES_DB) \
+		${ADMINER_CONTAINER}
+	@echo "Adminer started on port $(ADMINER_PORT)."
+else ifeq ($(DB_TYPE),mysql)
+	@echo "Starting Adminer for MySQL..."
+	@docker run --name adminer -d \
+		-p $(ADMINER_PORT):8080 \
+		-e ADMINER_DEFAULT_DB_DRIVER=mysql \
+		-e ADMINER_DEFAULT_DB_HOST=${MY_IP}:${MYSQL_PORT} \
+		-e ADMINER_DEFAULT_DB_NAME=$(MYSQL_DB) \
+		${ADMINER_CONTAINER}
+	@echo "Adminer started on port $(ADMINER_PORT)."
+else
+	@echo "Unsupported DB_TYPE for Adminer."
+endif
+
+.PHONY: stop-adminer
+stop-adminer: ## Stop Adminer
+	@echo "Stopping Adminer container..."
+	@docker stop ${ADMINER_CONTAINER}
+	@docker rm ${ADMINER_CONTAINER}
+	@echo "Adminer container stopped and removed."

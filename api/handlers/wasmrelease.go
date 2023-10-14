@@ -55,11 +55,13 @@ func (h *WASMReleaseHandler) GetReleaseByIDHandler(w http.ResponseWriter, r *htt
 // UpdateReleaseForPluginHandler handles the request to update a specific WASMRelease for a specific WASMPlugin
 func (h *WASMReleaseHandler) UpdateReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	var release entities.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	release.ID = releaseID
 	if err := h.Repo.UpdateReleaseForPlugin(pluginID, &release); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
