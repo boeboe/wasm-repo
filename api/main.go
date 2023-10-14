@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/boeboe/wasm-repo/api/handlers"
+	"github.com/boeboe/wasm-repo/api/middleware"
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/gorilla/mux"
 )
@@ -14,6 +15,11 @@ func main() {
 
 	r := mux.NewRouter()
 
+	// Global middleware
+	r.Use(middleware.LoggingMiddleware)
+	r.Use(middleware.ErrorHandlingMiddleware)
+
+	// Default base route
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to this wasm-repo"))
 	}).Methods("GET")

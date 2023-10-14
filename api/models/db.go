@@ -4,10 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/boeboe/wasm-repo/api/models/entities"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
+	"github.com/boeboe/wasm-repo/api/models/connectors"
 	"gorm.io/gorm"
 )
 
@@ -23,26 +20,22 @@ var (
 func ConnectDatabase() {
 	dbType := os.Getenv("DB_TYPE")
 
-	var err error
-
 	switch dbType {
 	case "postgres":
-		Db, err = gorm.Open(postgres.Open(os.Getenv("POSTGRES_DSN")), &gorm.Config{})
+		connectors.ConnectPostgres() // Assuming you named the function ConnectPostgres
+		Db = connectors.PostgresDb
 	case "mysql":
-		Db, err = gorm.Open(mysql.Open(os.Getenv("MYSQL_DSN")), &gorm.Config{})
+		connectors.ConnectMySQL() // Assuming you named the function ConnectMySQL
+		Db = connectors.MySqlDb
 	case "sqlite":
-		Db, err = gorm.Open(sqlite.Open(os.Getenv("SQLITE_DSN")), &gorm.Config{})
+		connectors.ConnectSQLite() // Assuming you named the function ConnectSQLite
+		Db = connectors.SqliteDb
 	default:
 		log.Fatalf("Unknown DB_TYPE provided. Supported types are: postgres, mysql, sqlite.")
 	}
 
-	if err != nil {
-		log.Fatalf("Failed to connect to the %s database: %v", dbType, err)
-	}
-
-	// AutoMigrate models
-	if err := Db.AutoMigrate(&entities.WASMPlugin{}, &entities.WASMRelease{}, &entities.WASMLocation{}); err != nil {
-		log.Fatalf("Failed to auto-migrate tables: %v", err)
+	if Db == nil {
+		log.Fatalf("Failed to connect to the %s database", dbType)
 	}
 
 	Repo = &WASMRepository{Database: Db}
