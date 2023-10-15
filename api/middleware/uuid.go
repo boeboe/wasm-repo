@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -21,10 +22,8 @@ func UUIDMiddleware(next http.Handler) http.Handler {
 				if id, err := uuid.Parse(value); err == nil {
 					ctx = context.WithValue(ctx, key, id)
 				} else {
-					// Handle invalid UUID format if necessary
-					// For example, you can send an error response and return:
-					// http.Error(w, "Invalid UUID format", http.StatusBadRequest)
-					// return
+					fmt.Printf("Error parsing UUID: %v\n", value)
+					http.Error(w, "Invalid UUID format", http.StatusBadRequest)
 				}
 			}
 		}

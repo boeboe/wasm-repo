@@ -37,6 +37,15 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Parse mandatory form fields "pluginID" and "releaseID"
+	releaseID := r.FormValue("releaseID")
+
+	if releaseID == "" {
+		fmt.Printf("Error: Mandatory field 'releaseID' not provided\n")
+		http.Error(w, "Mandatory field 'releaseID' not provided", http.StatusBadRequest)
+		return
+	}
+
 	// Store the file content
 	path, err := h.Repo.StoreFileContent(header.Filename, content)
 	if err != nil {
@@ -49,10 +58,11 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 
 	// Create a new WASMFile record
 	wasmFile := &models.WASMFile{
-		Filename: header.Filename,
-		Path:     path,
-		Sha256:   hex.EncodeToString(hash[:]),
-		Size:     len(content),
+		Filename:  header.Filename,
+		Path:      path,
+		Sha256:    hex.EncodeToString(hash[:]),
+		Size:      len(content),
+		ReleaseID: uuid.MustParse(releaseID),
 	}
 	if err := h.Repo.CreateFile(wasmFile); err != nil {
 		fmt.Printf("Error creating file record: %v\n", err)
