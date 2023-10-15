@@ -30,6 +30,19 @@ func (r *WASMFileRepo) GetFileByID(id uuid.UUID) (*models.WASMFile, error) {
 	return &file, r.wrapDBError("GetFileByID", err)
 }
 
+// GetFileByReleaseID retrieves a WASMFile associated with a specific WASMRelease.
+func (r *WASMFileRepo) GetFileByReleaseID(releaseID uuid.UUID) (*models.WASMFile, error) {
+	var file models.WASMFile
+	err := r.Database.First(&file, "release_id = ?", releaseID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, r.wrapDBError("GetFileByReleaseID", fmt.Errorf("no file found for release ID %s", releaseID))
+		}
+		return nil, r.wrapDBError("GetFileByReleaseID", err)
+	}
+	return &file, nil
+}
+
 // UpdateFile updates a WASMFile record in the database.
 func (r *WASMFileRepo) UpdateFile(file *models.WASMFile) error {
 	err := r.Database.Save(file).Error
@@ -63,4 +76,15 @@ func (r *WASMFileRepo) RetrieveFileContent(filename string) ([]byte, error) {
 
 	content, err := os.ReadFile(fullPath)
 	return content, r.wrapFileError(filename, "RetrieveFileContent", err)
+}
+
+// DeleteFileContent deletes the file from a storage location given a filename.
+func (r *WASMFileRepo) DeleteFileContent(filename string) error {
+	storagePath := "./output/" // Define your storage directory
+	fullPath := filepath.Join(storagePath, filename)
+
+	if err := os.Remove(fullPath); err != nil {
+		return r.wrapFileError(filename, "DeleteFileContent", err)
+	}
+	return nil
 }

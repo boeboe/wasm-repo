@@ -23,7 +23,7 @@ func main() {
 	// Initialize handler structs with the repository
 	fileHandler := &handlers.WASMFileHandler{Repo: repo.FileRepo}
 	pluginHandler := &handlers.WASMPluginHandler{Repo: repo.PluginRepo}
-	releaseHandler := &handlers.WASMReleaseHandler{Repo: repo.ReleaseRepo}
+	releaseHandler := &handlers.WASMReleaseHandler{FileRepo: repo.FileRepo, ReleaseRepo: repo.ReleaseRepo}
 
 	// Default base route
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
