@@ -80,8 +80,17 @@ else
    echo "The files are different."
 fi
 
-# Cleanup: Delete the generated files and the created plugin and release
+# Cleanup: Delete the generated files
 rm $FILE_NAME $DOWNLOAD_FILE_NAME
+
+# Cleanup: Delete the release
+echo "Deleting the release..."
+curl -X DELETE "$RELEASE_ENDPOINT/$RELEASE_ID"
+echo
+
+# Cleanup: Delete the plugin
+echo "Deleting the plugin..."
 curl -X DELETE "$PLUGIN_ENDPOINT/$PLUGIN_ID"
+echo
 
 echo "End-to-end test completed."
