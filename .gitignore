@@ -17,6 +17,7 @@
 /vendor/
 /bin/
 *.log
+*.bin
 
 
 # Vue.js (Node related)

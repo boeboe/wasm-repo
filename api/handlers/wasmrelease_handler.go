@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/boeboe/wasm-repo/api/models"
-	"github.com/boeboe/wasm-repo/api/models/entities"
+	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/google/uuid"
 )
 
 type WASMReleaseHandler struct {
-	Repo *models.WASMRepository
+	Repo *repository.WASMReleaseRepo
 }
 
 // ListAllReleasesForPluginHandler handles the request to list all WASMReleases for a specific WASMPlugin
@@ -27,7 +27,7 @@ func (h *WASMReleaseHandler) ListAllReleasesForPluginHandler(w http.ResponseWrit
 // CreateReleaseForPluginHandler handles the request to create a new WASMRelease for a specific WASMPlugin
 func (h *WASMReleaseHandler) CreateReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
-	var release entities.WASMRelease
+	var release models.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -56,7 +56,7 @@ func (h *WASMReleaseHandler) GetReleaseByIDHandler(w http.ResponseWriter, r *htt
 func (h *WASMReleaseHandler) UpdateReleaseForPluginHandler(w http.ResponseWriter, r *http.Request) {
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
-	var release entities.WASMRelease
+	var release models.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

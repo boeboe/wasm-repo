@@ -6,12 +6,12 @@ import (
 
 	"github.com/boeboe/wasm-repo/api/handlers"
 	"github.com/boeboe/wasm-repo/api/middleware"
-	"github.com/boeboe/wasm-repo/api/models"
+	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	repo := models.ConnectDatabase()
+	repo := repository.ConnectDatabase()
 
 	r := mux.NewRouter()
 
@@ -21,8 +21,9 @@ func main() {
 	r.Use(middleware.UUIDMiddleware)
 
 	// Initialize handler structs with the repository
-	pluginHandler := &handlers.WASMPluginHandler{Repo: repo}
-	releaseHandler := &handlers.WASMReleaseHandler{Repo: repo}
+	fileHandler := &handlers.WASMFileHandler{Repo: repo.FileRepo}
+	pluginHandler := &handlers.WASMPluginHandler{Repo: repo.PluginRepo}
+	releaseHandler := &handlers.WASMReleaseHandler{Repo: repo.ReleaseRepo}
 
 	// Default base route
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +43,10 @@ func main() {
 	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.GetReleaseByIDHandler).Methods("GET")
 	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.UpdateReleaseForPluginHandler).Methods("PUT")
 	r.HandleFunc("/plugins/{pluginID}/releases/{releaseID}", releaseHandler.DeleteReleaseForPluginHandler).Methods("DELETE")
+
+	// WASMFile routes
+	r.HandleFunc("/files", fileHandler.UploadFileHandler).Methods("POST")
+	r.HandleFunc("/files/{fileID}", fileHandler.DownloadFileHandler).Methods("GET")
 
 	// Start the server
 	log.Println("Server started on :8080")

@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/boeboe/wasm-repo/api/models"
-	"github.com/boeboe/wasm-repo/api/models/entities"
+	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/google/uuid"
 )
 
 type WASMPluginHandler struct {
-	Repo *models.WASMRepository
+	Repo *repository.WASMPluginRepo
 }
 
 // ListAllPluginsHandler handles the request to list all WASMPlugins
@@ -25,7 +25,7 @@ func (h *WASMPluginHandler) ListAllPluginsHandler(w http.ResponseWriter, r *http
 
 // CreatePluginHandler handles the request to create a new WASMPlugin
 func (h *WASMPluginHandler) CreatePluginHandler(w http.ResponseWriter, r *http.Request) {
-	var plugin entities.WASMPlugin
+	var plugin models.WASMPlugin
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -51,7 +51,7 @@ func (h *WASMPluginHandler) GetPluginByIDHandler(w http.ResponseWriter, r *http.
 
 // UpdatePluginHandler handles the request to update a specific WASMPlugin
 func (h *WASMPluginHandler) UpdatePluginHandler(w http.ResponseWriter, r *http.Request) {
-	var plugin entities.WASMPlugin
+	var plugin models.WASMPlugin
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

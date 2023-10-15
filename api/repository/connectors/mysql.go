@@ -3,7 +3,7 @@ package connectors
 import (
 	"log"
 
-	"github.com/boeboe/wasm-repo/api/models/entities"
+	"github.com/boeboe/wasm-repo/api/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -24,7 +24,7 @@ func ConnectMySQL() {
 	}
 
 	// Auto-migrate the model structs
-	err = db.AutoMigrate(&entities.WASMPlugin{}, &entities.WASMRelease{}, &entities.WASMLocation{})
+	err = db.AutoMigrate(&models.WASMPlugin{}, &models.WASMRelease{}, &models.WASMFile{})
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate tables: %v", err)
 	}
