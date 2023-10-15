@@ -10,7 +10,7 @@ import (
 type WASMPlugin struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Description string    `gorm:"type:text"`
-	Name        string    `gorm:"type:varchar(255);not null"`
+	Name        string    `gorm:"type:varchar(255);not null;unique"`
 	Owner       string    `gorm:"type:varchar(255);not null"`
 	Type        string    `gorm:"type:varchar(255);not null"`
 	CreatedAt   time.Time

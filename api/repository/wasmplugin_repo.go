@@ -8,37 +8,37 @@ import (
 
 type WASMPluginRepo struct {
 	Database *gorm.DB
+	BaseRepo
 }
 
 // ListAllPlugins lists all WASMPlugin entries from the PostgreSQL database.
 func (r *WASMPluginRepo) ListAllPlugins() ([]models.WASMPlugin, error) {
 	var plugins []models.WASMPlugin
-	if err := r.Database.Find(&plugins).Error; err != nil {
-		return nil, err
-	}
-	return plugins, nil
+	err := r.Database.Find(&plugins).Error
+	return plugins, r.wrapDBError("ListAllPlugins", err)
 }
 
 // CreatePlugin creates a new WASMPlugin entry in the PostgreSQL database.
 func (r *WASMPluginRepo) CreatePlugin(plugin *models.WASMPlugin) error {
-	return r.Database.Create(plugin).Error
+	err := r.Database.Create(plugin).Error
+	return r.wrapDBError("CreatePlugin", err)
 }
 
 // GetPluginByID retrieves a specific WASMPlugin by its ID from the PostgreSQL database.
 func (r *WASMPluginRepo) GetPluginByID(id uuid.UUID) (*models.WASMPlugin, error) {
 	var plugin models.WASMPlugin
-	if err := r.Database.First(&plugin, "id = ?", id).Error; err != nil {
-		return nil, handleDBError(err)
-	}
-	return &plugin, nil
+	err := r.Database.First(&plugin, "id = ?", id).Error
+	return &plugin, r.wrapDBError("GetPluginByID", err)
 }
 
 // UpdatePlugin updates a specific WASMPlugin entry in the PostgreSQL database.
 func (r *WASMPluginRepo) UpdatePlugin(plugin *models.WASMPlugin) error {
-	return r.Database.Save(plugin).Error
+	err := r.Database.Save(plugin).Error
+	return r.wrapDBError("UpdatePlugin", err)
 }
 
 // DeletePlugin deletes a specific WASMPlugin by its ID from the PostgreSQL database.
 func (r *WASMPluginRepo) DeletePlugin(id uuid.UUID) error {
-	return r.Database.Delete(&models.WASMPlugin{}, "id = ?", id).Error
+	err := r.Database.Delete(&models.WASMPlugin{}, "id = ?", id).Error
+	return r.wrapDBError("DeletePlugin", err)
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/boeboe/wasm-repo/api/errors"
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/google/uuid"
@@ -18,8 +19,7 @@ func (h *WASMReleaseHandler) ListAllReleasesForPluginHandler(w http.ResponseWrit
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	releases, err := h.Repo.ListAllReleasesForPlugin(pluginID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	json.NewEncoder(w).Encode(releases)
 }
@@ -29,12 +29,10 @@ func (h *WASMReleaseHandler) CreateReleaseForPluginHandler(w http.ResponseWriter
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	var release models.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		panic(&errors.JSONDecodingError{Source: "CreateReleaseForPluginHandler", Err: err})
 	}
 	if err := h.Repo.CreateReleaseForPlugin(pluginID, &release); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(release)
@@ -46,8 +44,7 @@ func (h *WASMReleaseHandler) GetReleaseByIDHandler(w http.ResponseWriter, r *htt
 	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	release, err := h.Repo.GetReleaseByID(pluginID, releaseID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		panic(err)
 	}
 	json.NewEncoder(w).Encode(release)
 }
@@ -58,13 +55,11 @@ func (h *WASMReleaseHandler) UpdateReleaseForPluginHandler(w http.ResponseWriter
 	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	var release models.WASMRelease
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		panic(&errors.JSONDecodingError{Source: "UpdateReleaseForPluginHandler", Err: err})
 	}
 	release.ID = releaseID
 	if err := h.Repo.UpdateReleaseForPlugin(pluginID, &release); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(release)
@@ -75,8 +70,7 @@ func (h *WASMReleaseHandler) DeleteReleaseForPluginHandler(w http.ResponseWriter
 	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
 	releaseID, _ := r.Context().Value("releaseID").(uuid.UUID)
 	if err := h.Repo.DeleteReleaseForPlugin(pluginID, releaseID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -13,31 +13,33 @@ import (
 
 type WASMFileRepo struct {
 	Database *gorm.DB
+	BaseRepo
 }
 
 // CreateFile creates a new WASMFile record in the database.
 func (r *WASMFileRepo) CreateFile(file *models.WASMFile) error {
 	fmt.Printf("CreateFile: %+v \n\n", file)
-	return r.Database.Create(file).Error
+	err := r.Database.Create(file).Error
+	return r.wrapDBError("CreateFile", err)
 }
 
 // GetFileByID retrieves a WASMFile by its ID.
 func (r *WASMFileRepo) GetFileByID(id uuid.UUID) (*models.WASMFile, error) {
 	var file models.WASMFile
-	if err := r.Database.First(&file, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &file, nil
+	err := r.Database.First(&file, "id = ?", id).Error
+	return &file, r.wrapDBError("GetFileByID", err)
 }
 
 // UpdateFile updates a WASMFile record in the database.
 func (r *WASMFileRepo) UpdateFile(file *models.WASMFile) error {
-	return r.Database.Save(file).Error
+	err := r.Database.Save(file).Error
+	return r.wrapDBError("UpdateFile", err)
 }
 
 // DeleteFile deletes a WASMFile record from the database.
 func (r *WASMFileRepo) DeleteFile(id uuid.UUID) error {
-	return r.Database.Delete(&models.WASMFile{}, "id = ?", id).Error
+	err := r.Database.Delete(&models.WASMFile{}, "id = ?", id).Error
+	return r.wrapDBError("DeleteFile", err)
 }
 
 // StoreFileContent saves the file content to a storage location and returns the path.
@@ -46,10 +48,8 @@ func (r *WASMFileRepo) StoreFileContent(filename string, content []byte) (string
 	storagePath := "./output/" // Define your storage directory
 	fullPath := filepath.Join(storagePath, filename)
 
-	if err := os.WriteFile(fullPath, content, 0644); err != nil {
-		return "", err
-	}
-	return fullPath, nil
+	err := os.WriteFile(fullPath, content, 0644)
+	return fullPath, r.wrapFileError(filename, "StoreFileContent", err)
 }
 
 // RetrieveFileContent retrieves the file content from a storage location given a filename.
@@ -58,12 +58,9 @@ func (r *WASMFileRepo) RetrieveFileContent(filename string) ([]byte, error) {
 	fullPath := filepath.Join(storagePath, filename)
 
 	if _, err := os.Stat(fullPath); errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("file %s does not exist", filename)
+		return nil, r.wrapFileError(filename, "RetrieveFileContent", fmt.Errorf("file %s does not exist", filename))
 	}
 
 	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		return nil, err
-	}
-	return content, nil
+	return content, r.wrapFileError(filename, "RetrieveFileContent", err)
 }

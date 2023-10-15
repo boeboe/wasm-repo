@@ -49,9 +49,7 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 	// Store the file content
 	path, err := h.Repo.StoreFileContent(header.Filename, content)
 	if err != nil {
-		fmt.Printf("Error storing file: %v\n", err)
-		http.Error(w, "Unable to store file", http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 
 	hash := sha256.Sum256(content)
@@ -65,9 +63,7 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 		ReleaseID: uuid.MustParse(releaseID),
 	}
 	if err := h.Repo.CreateFile(wasmFile); err != nil {
-		fmt.Printf("Error creating file record: %v\n", err)
-		http.Error(w, "Unable to create file record", http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -87,17 +83,13 @@ func (h *WASMFileHandler) DownloadFileHandler(w http.ResponseWriter, r *http.Req
 	// Retrieve the WASMFile record
 	wasmFile, err := h.Repo.GetFileByID(fileID)
 	if err != nil {
-		fmt.Printf("File not found error: %v\n", err)
-		http.Error(w, "File not found", http.StatusNotFound)
-		return
+		panic(err)
 	}
 
 	// Retrieve the file content
 	content, err := h.Repo.RetrieveFileContent(wasmFile.Filename)
 	if err != nil {
-		fmt.Printf("Error retrieving file: %v\n", err)
-		http.Error(w, "Unable to retrieve file", http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 
 	// Set headers and write the file content to the response

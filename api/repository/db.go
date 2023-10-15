@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"os"
 
@@ -52,12 +50,4 @@ func ConnectDatabase() *Repositories {
 		PluginRepo:  pluginRepo,
 		ReleaseRepo: releaseRepo,
 	}
-}
-
-// handleDBError is a helper function to handle common database errors.
-func handleDBError(err error) error {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("record not found: %v", err)
-	}
-	return err
 }

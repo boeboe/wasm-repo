@@ -4,21 +4,29 @@ BASE_URL="http://localhost:8080"
 PLUGIN_ENDPOINT="$BASE_URL/plugins"
 FILES_ENDPOINT="$BASE_URL/files"
 
+# Generate a unique plugin name using a timestamp
+PLUGIN_NAME="TestPlugin_$(date +%s)"
+
 # Test: Create a new plugin
 echo "Creating a new plugin..."
 PLUGIN_RESPONSE=$(curl -s -X POST $PLUGIN_ENDPOINT \
      -H "Content-Type: application/json" \
-     -d '{
-         "Name": "TestPlugin",
-         "Owner": "TestOwner",
-         "Description": "This is a test plugin",
-         "Type": "TestType"
-     }')
+     -d "{
+         \"Name\": \"$PLUGIN_NAME\",
+         \"Owner\": \"TestOwner\",
+         \"Description\": \"This is a test plugin\",
+         \"Type\": \"TestType\"
+     }")
 echo "Plugin Response: $PLUGIN_RESPONSE"
 echo
 
 # Extract the plugin ID from the response
 PLUGIN_ID=$(echo $PLUGIN_RESPONSE | jq -r '.ID')
+if [[ "$PLUGIN_ID" == "null" || -z "$PLUGIN_ID" ]]; then
+    echo "Failed to extract plugin ID from response."
+    exit 1
+fi
+
 RELEASE_ENDPOINT="$PLUGIN_ENDPOINT/$PLUGIN_ID/releases"
 
 # Test: Create a new release for the plugin
@@ -34,6 +42,10 @@ echo
 
 # Extract the release ID from the response
 RELEASE_ID=$(echo $RELEASE_RESPONSE | jq -r '.ID')
+if [[ "$RELEASE_ID" == "null" || -z "$RELEASE_ID" ]]; then
+    echo "Failed to extract release ID from response."
+    exit 1
+fi
 
 # Generate a random binary file
 FILE_NAME="random_file_$(date +%s).bin"
@@ -44,7 +56,6 @@ echo "Generated file: $FILE_NAME"
 echo "Uploading the binary file..."
 UPLOAD_RESPONSE=$(curl -s -X POST $FILES_ENDPOINT \
      -F "file=@$FILE_NAME" \
-     -F "pluginID=$PLUGIN_ID" \
      -F "releaseID=$RELEASE_ID")
 echo "Upload Response: $UPLOAD_RESPONSE"
 echo
