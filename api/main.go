@@ -47,7 +47,7 @@ func main() {
 	// WASMFile routes
 	r.HandleFunc("/files", fileHandler.UploadFileHandler).Methods("POST")
 	r.HandleFunc("/files/{fileID}", fileHandler.DownloadFileHandler).Methods("GET")
-	r.HandleFunc("/wasm-plugins/{pluginName}-{releaseVersion}.wasm", fileHandler.ConsumeFileHandler).Methods("GET")
+	r.HandleFunc("/downloads/{downloadAlias}", fileHandler.ConsumeFileHandler).Methods("GET")
 
 	// Start the server
 	log.Println("Server started on :8080")

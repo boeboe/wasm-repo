@@ -27,8 +27,8 @@ type WASMPlugin struct {
 }
 
 // BeforeCreate is a GORM hook that gets triggered before a new record is inserted into the database.
-func (plugin *WASMPlugin) BeforeCreate(tx *gorm.DB) (err error) {
-	plugin.ID = uuid.New() // Generate a new UUID for the record.
+func (wp *WASMPlugin) BeforeCreate(tx *gorm.DB) (err error) {
+	wp.ID = uuid.New() // Generate a new UUID for the record.
 	return
 }
 

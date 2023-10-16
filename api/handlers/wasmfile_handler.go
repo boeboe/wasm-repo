@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/boeboe/wasm-repo/api/middleware"
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/google/uuid"
@@ -72,27 +73,15 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 
 // DownloadFileHandler handles the request to download a WASMFile for internal purposes.
 func (h *WASMFileHandler) DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fileID, err := uuid.Parse(vars["fileID"])
-	if err != nil {
-		fmt.Printf("Invalid file ID error: %v\n", err)
-		http.Error(w, "Invalid file ID", http.StatusBadRequest)
-		return
-	}
-
-	// Retrieve the WASMFile record
+	fileID, _ := r.Context().Value(middleware.FileIDKey).(uuid.UUID)
 	wasmFile, err := h.Repo.GetFileByID(fileID)
 	if err != nil {
 		panic(err)
 	}
-
-	// Retrieve the file content
 	content, err := h.Repo.RetrieveFileContent(wasmFile.Filename)
 	if err != nil {
 		panic(err)
 	}
-
-	// Set headers and write the file content to the response
 	w.Header().Set("Content-Disposition", "attachment; filename="+wasmFile.Filename)
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Write(content)
@@ -100,5 +89,17 @@ func (h *WASMFileHandler) DownloadFileHandler(w http.ResponseWriter, r *http.Req
 
 // ConsumeFileHandler handles the request to download a WASMFile for external consumption purposes.
 func (h *WASMFileHandler) ConsumeFileHandler(w http.ResponseWriter, r *http.Request) {
-
+	vars := mux.Vars(r)
+	downloadAlias, _ := vars["downloadAlias"]
+	wasmFile, err := h.Repo.GetFileByDownloadAlias(downloadAlias)
+	if err != nil {
+		panic(err)
+	}
+	content, err := h.Repo.RetrieveFileContent(wasmFile.Filename)
+	if err != nil {
+		panic(err)
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename="+wasmFile.Filename)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Write(content)
 }

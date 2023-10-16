@@ -15,6 +15,7 @@ type contextKey string
 const (
 	PluginIDKey  contextKey = "pluginID"
 	ReleaseIDKey contextKey = "releaseID"
+	FileIDKey    contextKey = "fileID"
 )
 
 func UUIDMiddleware(next http.Handler) http.Handler {
@@ -23,7 +24,7 @@ func UUIDMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		// List of known ID keys
-		idKeys := []contextKey{PluginIDKey, ReleaseIDKey}
+		idKeys := []contextKey{PluginIDKey, ReleaseIDKey, FileIDKey}
 
 		for _, key := range idKeys {
 			if value, ok := vars[string(key)]; ok {

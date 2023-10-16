@@ -18,7 +18,9 @@ type WASMFileRepo struct {
 
 // CreateFile creates a new WASMFile record in the database.
 func (r *WASMFileRepo) CreateFile(file *models.WASMFile) error {
-	fmt.Printf("CreateFile: %+v \n\n", file)
+	if err := r.setDownloadAliasForFile(file); err != nil {
+		return err
+	}
 	err := r.Database.Create(file).Error
 	return r.wrapDBError("CreateFile", err)
 }
@@ -43,8 +45,24 @@ func (r *WASMFileRepo) GetFileByReleaseID(releaseID uuid.UUID) (*models.WASMFile
 	return &file, nil
 }
 
+// GetFileByDownloadAlias retrieves a WASMFile by its DownloadAlias.
+func (r *WASMFileRepo) GetFileByDownloadAlias(downloadAlias string) (*models.WASMFile, error) {
+	var file models.WASMFile
+	err := r.Database.First(&file, "download_alias = ?", downloadAlias).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, r.wrapDBError("GetFileByDownloadAlias", fmt.Errorf("no file found for download alias %s", downloadAlias))
+		}
+		return nil, r.wrapDBError("GetFileByDownloadAlias", err)
+	}
+	return &file, nil
+}
+
 // UpdateFile updates a WASMFile record in the database.
 func (r *WASMFileRepo) UpdateFile(file *models.WASMFile) error {
+	if err := r.setDownloadAliasForFile(file); err != nil {
+		return err
+	}
 	err := r.Database.Save(file).Error
 	return r.wrapDBError("UpdateFile", err)
 }
@@ -86,5 +104,21 @@ func (r *WASMFileRepo) DeleteFileContent(filename string) error {
 	if err := os.Remove(fullPath); err != nil {
 		return r.wrapFileError(filename, "DeleteFileContent", err)
 	}
+	return nil
+}
+
+// setDownloadLinkForFile sets the download link for a given WASMFile based on its associated plugin and release.
+func (r *WASMFileRepo) setDownloadAliasForFile(file *models.WASMFile) error {
+	var release models.WASMRelease
+	err := r.Database.First(&release, file.ReleaseID).Error
+	if err != nil {
+		return err
+	}
+	var plugin models.WASMPlugin
+	err = r.Database.First(&plugin, release.PluginID).Error
+	if err != nil {
+		return err
+	}
+	file.SetDownloadAlias(plugin.Name, release.Version)
 	return nil
 }
