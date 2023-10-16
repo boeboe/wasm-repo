@@ -71,7 +71,7 @@ start-mysql: ## Start MySQL
 							--env MYSQL_DATABASE=${MYSQL_DB} \
 							--env MYSQL_USER=${MYSQL_USER} \
 							--env MYSQL_PASSWORD=${MYSQL_PASSWORD} \
-							-p ${MYSQL_PORT}:3306 \
+							--publish ${MYSQL_PORT}:3306 \
 							--detach mysql:latest
 	@echo "MySQL started on port 3306."
 
@@ -86,21 +86,23 @@ stop-mysql: ## Stop MySQL
 start-adminer: ## Start Adminer for PostgreSQL and MySQL
 ifeq ($(DB_TYPE),postgres)
 	@echo "Starting Adminer for PostgreSQL..."
-	@docker run --name adminer -d \
-		-p $(ADMINER_PORT):8080 \
-		-e ADMINER_DEFAULT_DB_DRIVER=pgsql \
-		-e ADMINER_DEFAULT_DB_HOST=${MY_IP}:${POSTGRES_PORT} \
-		-e ADMINER_DEFAULT_DB_NAME=$(POSTGRES_DB) \
-		${ADMINER_CONTAINER}
+	@docker run --name ${ADMINER_CONTAINER} \
+							--env ADMINER_DEFAULT_DB_DRIVER=pgsql \
+							--env ADMINER_DEFAULT_DB_HOST=${MY_IP}:${POSTGRES_PORT} \
+							--env ADMINER_DEFAULT_DB_NAME=$(POSTGRES_DB) \
+							--env ADMINER_DESIGN=flat \
+							--publish $(ADMINER_PORT):8080 \
+							--detach adminer
 	@echo "Adminer started on port $(ADMINER_PORT)."
 else ifeq ($(DB_TYPE),mysql)
 	@echo "Starting Adminer for MySQL..."
-	@docker run --name adminer -d \
-		-p $(ADMINER_PORT):8080 \
-		-e ADMINER_DEFAULT_DB_DRIVER=mysql \
-		-e ADMINER_DEFAULT_DB_HOST=${MY_IP}:${MYSQL_PORT} \
-		-e ADMINER_DEFAULT_DB_NAME=$(MYSQL_DB) \
-		${ADMINER_CONTAINER}
+	@docker run --name ${ADMINER_CONTAINER} \
+							--env ADMINER_DEFAULT_DB_DRIVER=mysql \
+							--env ADMINER_DEFAULT_DB_HOST=${MY_IP}:${MYSQL_PORT} \
+							--env ADMINER_DEFAULT_DB_NAME=$(MYSQL_DB) \
+							--env ADMINER_DESIGN=flat \
+							--publish $(ADMINER_PORT):8080 \
+							--detach adminer
 	@echo "Adminer started on port $(ADMINER_PORT)."
 else
 	@echo "Unsupported DB_TYPE for Adminer."

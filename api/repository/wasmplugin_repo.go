@@ -18,6 +18,25 @@ func (r *WASMPluginRepo) ListAllPlugins() ([]models.WASMPlugin, error) {
 	return plugins, r.wrapDBError("ListAllPlugins", err)
 }
 
+// SearchPluginsByName lists all WASMPlugin entries from the PostgreSQL database with an optional filter.
+func (r *WASMPluginRepo) SearchPlugins(filter models.WASMPluginFilter) ([]models.WASMPlugin, error) {
+	query := r.Database
+
+	if filter.Name != "" {
+		query = query.Where("name LIKE ?", "%"+filter.Name+"%")
+	}
+	if filter.Owner != "" {
+		query = query.Where("owner = ?", filter.Owner)
+	}
+	if filter.Type != "" {
+		query = query.Where("type = ?", filter.Type)
+	}
+
+	var plugins []models.WASMPlugin
+	err := query.Find(&plugins).Error
+	return plugins, err
+}
+
 // CreatePlugin creates a new WASMPlugin entry in the PostgreSQL database.
 func (r *WASMPluginRepo) CreatePlugin(plugin *models.WASMPlugin) error {
 	err := r.Database.Create(plugin).Error

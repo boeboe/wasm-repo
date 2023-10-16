@@ -31,3 +31,9 @@ func (plugin *WASMPlugin) BeforeCreate(tx *gorm.DB) (err error) {
 	plugin.ID = uuid.New() // Generate a new UUID for the record.
 	return
 }
+
+type WASMPluginFilter struct {
+	Name  string
+	Owner string
+	Type  string
+}

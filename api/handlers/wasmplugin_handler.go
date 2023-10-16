@@ -16,9 +16,15 @@ type WASMPluginHandler struct {
 	Repo *repository.WASMPluginRepo
 }
 
-// ListAllPluginsHandler handles the request to list all WASMPlugins
+// ListAllPluginsHandler handles the request to list all WASMPlugins, with an optional filter
 func (h *WASMPluginHandler) ListAllPluginsHandler(w http.ResponseWriter, r *http.Request) {
-	plugins, err := h.Repo.ListAllPlugins()
+	filter := models.WASMPluginFilter{
+		Name:  r.URL.Query().Get("name"),
+		Owner: r.URL.Query().Get("owner"),
+		Type:  r.URL.Query().Get("type"),
+	}
+
+	plugins, err := h.Repo.SearchPlugins(filter)
 	if err != nil {
 		panic(err)
 	}
