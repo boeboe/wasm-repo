@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/boeboe/wasm-repo/api/errors"
+	"github.com/boeboe/wasm-repo/api/middleware"
 	"github.com/boeboe/wasm-repo/api/models"
 	"github.com/boeboe/wasm-repo/api/repository"
 	"github.com/boeboe/wasm-repo/api/validation"
@@ -30,7 +31,7 @@ func (h *WASMPluginHandler) CreatePluginHandler(w http.ResponseWriter, r *http.R
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
 		panic(&errors.JSONDecodingError{Source: "CreatePluginHandler", Err: err})
 	}
-	if err := validation.IsValidPluginName(plugin.Name); err != nil {
+	if err := validation.ValidateWASMPlugin(&plugin); err != nil {
 		panic(err)
 	}
 	if err := h.Repo.CreatePlugin(&plugin); err != nil {
@@ -42,7 +43,7 @@ func (h *WASMPluginHandler) CreatePluginHandler(w http.ResponseWriter, r *http.R
 
 // GetPluginByIDHandler handles the request to get a specific WASMPlugin by its ID
 func (h *WASMPluginHandler) GetPluginByIDHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	pluginID, _ := r.Context().Value(middleware.PluginIDKey).(uuid.UUID)
 	plugin, err := h.Repo.GetPluginByID(pluginID)
 	if err != nil {
 		panic(err)
@@ -56,11 +57,11 @@ func (h *WASMPluginHandler) UpdatePluginHandler(w http.ResponseWriter, r *http.R
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
 		panic(&errors.JSONDecodingError{Source: "UpdatePluginHandler", Err: err})
 	}
-	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
-	plugin.ID = pluginID
-	if err := validation.IsValidPluginName(plugin.Name); err != nil {
+	if err := validation.ValidateWASMPlugin(&plugin); err != nil {
 		panic(err)
 	}
+	pluginID, _ := r.Context().Value(middleware.PluginIDKey).(uuid.UUID)
+	plugin.ID = pluginID
 	if err := h.Repo.UpdatePlugin(&plugin); err != nil {
 		panic(err)
 	}
@@ -70,7 +71,7 @@ func (h *WASMPluginHandler) UpdatePluginHandler(w http.ResponseWriter, r *http.R
 
 // DeletePluginHandler handles the request to delete a specific WASMPlugin
 func (h *WASMPluginHandler) DeletePluginHandler(w http.ResponseWriter, r *http.Request) {
-	pluginID, _ := r.Context().Value("pluginID").(uuid.UUID)
+	pluginID, _ := r.Context().Value(middleware.PluginIDKey).(uuid.UUID)
 	if err := h.Repo.DeletePlugin(pluginID); err != nil {
 		panic(err)
 	}

@@ -70,7 +70,7 @@ func (h *WASMFileHandler) UploadFileHandler(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(wasmFile)
 }
 
-// DownloadFileHandler handles the request to download a WASMFile.
+// DownloadFileHandler handles the request to download a WASMFile for internal purposes.
 func (h *WASMFileHandler) DownloadFileHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fileID, err := uuid.Parse(vars["fileID"])
@@ -96,4 +96,9 @@ func (h *WASMFileHandler) DownloadFileHandler(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Disposition", "attachment; filename="+wasmFile.Filename)
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Write(content)
+}
+
+// ConsumeFileHandler handles the request to download a WASMFile for external consumption purposes.
+func (h *WASMFileHandler) ConsumeFileHandler(w http.ResponseWriter, r *http.Request) {
+
 }

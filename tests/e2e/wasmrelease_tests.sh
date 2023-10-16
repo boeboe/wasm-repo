@@ -3,8 +3,14 @@
 BASE_URL="http://localhost:8080"
 PLUGIN_ENDPOINT="$BASE_URL/plugins"
 
+# Array of valid plugin types
+VALID_PLUGIN_TYPES=("HttpFilter" "NetworkFilter" "WasmService")
+
 # Generate a unique plugin name using a timestamp
 PLUGIN_NAME="TestPlugin_$(date +%s)"
+
+# Randomly select a valid plugin type
+RANDOM_TYPE=${VALID_PLUGIN_TYPES[$RANDOM % ${#VALID_PLUGIN_TYPES[@]}]}
 
 # Test: Create a new plugin
 echo "Creating a new plugin..."
@@ -14,7 +20,7 @@ PLUGIN_RESPONSE=$(curl -s -X POST $PLUGIN_ENDPOINT \
          \"Name\": \"$PLUGIN_NAME\",
          \"Owner\": \"TestOwner\",
          \"Description\": \"This is a test plugin\",
-         \"Type\": \"TestType\"
+         \"Type\": \"$RANDOM_TYPE\"
      }")
 echo $PLUGIN_RESPONSE
 echo

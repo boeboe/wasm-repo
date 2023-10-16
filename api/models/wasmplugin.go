@@ -7,6 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type WASMPluginType string
+
+const (
+	HttpFilter    WASMPluginType = "HttpFilter"
+	NetworkFilter WASMPluginType = "NetworkFilter"
+	WasmService   WASMPluginType = "WasmService"
+)
+
 type WASMPlugin struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Description string    `gorm:"type:text"`

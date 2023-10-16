@@ -44,3 +44,13 @@ func (r *WASMReleaseRepo) DeleteReleaseForPlugin(pluginID uuid.UUID, releaseID u
 	err := r.Database.Delete(&models.WASMRelease{}, "plugin_id = ? AND id = ?", pluginID, releaseID).Error
 	return r.wrapDBError("DeleteReleaseForPlugin", err)
 }
+
+// HasFileForRelease checks if a specific WASMRelease has an associated WASMFile.
+func (r *WASMReleaseRepo) HasFileForRelease(releaseID uuid.UUID) (bool, error) {
+	var count int64
+	err := r.Database.Model(&models.WASMFile{}).Where("release_id = ?", releaseID).Count(&count).Error
+	if err != nil {
+		return false, r.wrapDBError("HasFileForRelease", err)
+	}
+	return count > 0, nil
+}
